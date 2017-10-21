@@ -3,6 +3,8 @@ import irc.connection
 import logging
 import ssl
 
+from .module_loader import load_modules
+
 log = logging.getLogger('bavi')
 log.setLevel(logging.INFO)
 
@@ -11,6 +13,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.config = config
 
         self._init_irc(config['irc'])
+        self._init_modules()
 
     def _init_irc(self, irc_config):
         spec = irc.bot.ServerSpec(
@@ -37,6 +40,9 @@ class Bot(irc.bot.SingleServerIRCBot):
                 nick,
                 **additional_args
         )
+
+    def _init_modules(self):
+        load_modules(self)
 
     def on_welcome(self, conn, event):
         for chan in self.config.get('irc', 'Channels').split(','):
