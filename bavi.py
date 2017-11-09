@@ -6,6 +6,7 @@ import logging
 import sys
 
 from bavi.bot import Bot
+from bavi.module_loader import load_modules
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='General-purpose chat bot')
@@ -19,4 +20,6 @@ if __name__ == '__main__':
     conf.read(args.config)
 
     bot = Bot(conf)
+    bot.init_irc()
+    load_modules(bot)
     bot.start()
