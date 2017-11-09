@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 import argparse
+import configparser
 import logging
 import sys
 
-from bavi.config import load_config
 from bavi.bot import Bot
 
 if __name__ == '__main__':
@@ -15,7 +15,8 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
 
-    conf = load_config(args.config)
+    conf = configparser.ConfigParser()
+    conf.read(args.config)
 
     bot = Bot(conf)
     bot.start()
