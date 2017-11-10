@@ -127,13 +127,20 @@ class Bot(irc.bot.SingleServerIRCBot):
 
             if msg.startswith(self._command_prefix):
                 # Syntax: ".command", "!command", etc.
-                cmd, rest = msg.split(' ', 1)
+                if ' ' in msg:
+                    cmd, rest = msg.split(' ', 1)
+                else:
+                    cmd, rest = msg, ''
                 cmd = cmd[len(self._command_prefix):]
                 self._dispatch_command(event, cmd, rest)
                 return
             elif self._addressed_to_me(msg):
                 # Syntax: "Bot: command"
-                _, cmd, rest = msg.split(' ', 2)
+                _, rest = msg.split(' ', 1)
+                if ' ' in rest:
+                    cmd, rest = rest.split(' ', 1)
+                else:
+                    cmd, rest = rest, ''
                 self._dispatch_command(event, cmd, rest)
                 return
         except BaseException as e:

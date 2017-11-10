@@ -24,7 +24,7 @@ Python built-in `unittest` module.
 If this is not the case, you can run the tests with:
 
 ```sh
-/path/to/python -m unittest discover -s test
+/path/to/python -m unittest discover -s test -p '*_test.py'
 ```
 
 ### Manual Testing
