@@ -107,8 +107,8 @@ class Bot(irc.bot.SingleServerIRCBot):
                     self,
                     event.source,
                     event.target,
-                    command=cmd,
-                    message=message
+                    message,
+                    command=cmd
             )
         except BaseException as e:
             exception_msg = type(e).__name__ + ': ' + str(e)
