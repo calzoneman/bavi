@@ -20,6 +20,13 @@ Please include a few unit tests with code changes.  You can run the tests with
 the included script `bin/run-unit-tests`.  Tests are implemented using the
 Python built-in `unittest` module.
 
+**Note:** `bin/run-unit-tests` assumes you have a virtualenv located at `.env`.
+If this is not the case, you can run the tests with:
+
+```sh
+/path/to/python -m unittest discover -s test
+```
+
 ### Manual Testing
 
 It's also preferable to run the bot with your changes and verify it works as
