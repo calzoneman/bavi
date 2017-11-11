@@ -1,6 +1,7 @@
 import irc.bot
 import irc.connection
 import logging
+import re
 import sqlite3
 import ssl
 
@@ -18,6 +19,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         self._command_prefix = '.' # TODO: configurable
         self._commands = {}
+        self._matchers = []
 
     def init_irc(self):
         irc_config = self.config['irc']
@@ -91,12 +93,30 @@ class Bot(irc.bot.SingleServerIRCBot):
         # TODO: log outbound message to chat log
         self.connection.privmsg(target, message)
 
-    # TODO: support triggering commands by regex matches on message
     def add_command(self, cmd, handler):
         '''
         Register a command
         '''
         self._commands[cmd] = handler
+
+    def add_matcher(self, regex, handler, priority='low'):
+        if priority not in { 'low', 'medium', 'high' }:
+            raise ValueError('priority must be low, medium, or high')
+
+        if type(regex) != type(re.compile('')):
+            raise TypeError('regex argument must be a compiled regex')
+
+        if priority == 'low':
+            self._matchers.append((regex, handler))
+        elif priority == 'high':
+            self._matchers = [(regex, handler)] + self._matchers
+        else:
+            idx = len(self._matchers)//2
+            self._matchers = (
+                    self._matchers[:idx] +
+                    [(regex, handler)] +
+                    self._matchers[idx:]
+            )
 
     def _dispatch_command(self, event, cmd, message):
         if cmd not in self._commands:
@@ -119,6 +139,26 @@ class Bot(irc.bot.SingleServerIRCBot):
             exception_msg = type(e).__name__ + ': ' + str(e)
             log.exception('Command "%s" failed', cmd)
             self.say(event.target, exception_msg)
+
+    def _dispatch_matcher(self, event, message):
+        for regex, handler in self._matchers:
+            match = regex.search(message)
+            if match:
+                log.debug('Matched pattern: %s', regex.pattern)
+                try:
+                    handler(
+                            self,
+                            event.source,
+                            event.target,
+                            message,
+                            match=match
+                    )
+                except BaseException as e:
+                    exception_msg = type(e).__name__ + ': ' + str(e)
+                    log.exception('Message handler failed')
+                    self.say(event.target, exception_msg)
+                finally:
+                    return
 
     def on_welcome(self, conn, event):
         for chan in self.config.get('irc', 'Channels').split(','):
@@ -148,6 +188,8 @@ class Bot(irc.bot.SingleServerIRCBot):
                     cmd, rest = rest, ''
                 self._dispatch_command(event, cmd, rest)
                 return
+            else:
+                self._dispatch_matcher(event, msg)
         except BaseException as e:
             log.exception('Failed to process pubmsg event "%s"', str(event))
 

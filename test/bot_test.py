@@ -1,3 +1,4 @@
+import re
 import unittest
 from unittest.mock import MagicMock
 
@@ -130,3 +131,125 @@ class BotTestCase(unittest.TestCase):
             raise AssertionError('Expected KeyError for wrong channel')
 
         self.bot.connection.privmsg.assert_not_called()
+
+    def test_add_matcher(self):
+        def handler(bot, source, target, message, match):
+            bot.say(target, 'Matched {}'.format(match.group(1)))
+
+        self.bot.add_matcher(re.compile(r'matchme:([0-9]+)'), handler)
+
+        self.bot.on_pubmsg(
+                None,
+                Event(
+                    'pubmsg',
+                    NickMask('user!ident@host'),
+                    '#test',
+                    ['this is an matchme:123 example']
+                )
+        )
+        self.bot.connection.privmsg.assert_called_with(
+                '#test',
+                'Matched 123'
+        )
+
+    def test_matcher_raises_error_prints_error(self):
+        def handler(bot, source, target, message, match):
+            raise ValueError('Something is wrong')
+
+        self.bot.add_matcher(re.compile(r'matchme:([0-9]+)'), handler)
+
+        self.bot.on_pubmsg(
+                None,
+                Event(
+                    'pubmsg',
+                    NickMask('user!ident@host'),
+                    '#test',
+                    ['this is an matchme:123 example']
+                )
+        )
+        self.bot.connection.privmsg.assert_called_with(
+                '#test',
+                'ValueError: Something is wrong'
+        )
+
+    def test_add_matcher_high_priority(self):
+        def handler(bot, source, target, message, match):
+            bot.say(target, 'Matched {}'.format(match.group(1)))
+
+        def important_handler(bot, source, target, message, match):
+            bot.say(target, 'Important {}'.format(match.group(1)))
+
+        self.bot.add_matcher(re.compile(r'matchme:([0-9]+)'), handler)
+        self.bot.add_matcher(
+                re.compile(r'matchme:([0-9]+)'),
+                important_handler,
+                priority='high'
+        )
+
+        self.bot.on_pubmsg(
+                None,
+                Event(
+                    'pubmsg',
+                    NickMask('user!ident@host'),
+                    '#test',
+                    ['this is an matchme:123 example']
+                )
+        )
+        self.bot.connection.privmsg.assert_called_with(
+                '#test',
+                'Important 123'
+        )
+
+    def test_add_matcher_med_priority(self):
+        def handler(bot, source, target, message, match):
+            bot.say(target, 'Matched {}'.format(match.group(1)))
+
+        def important_handler(bot, source, target, message, match):
+            bot.say(target, 'Important {}'.format(match.group(1)))
+
+        self.bot.add_matcher(re.compile(r'matchme:([0-9]+)'), handler)
+        self.bot.add_matcher(
+                re.compile(r'matchme:([0-9]+)'),
+                important_handler,
+                priority='medium'
+        )
+
+        self.bot.on_pubmsg(
+                None,
+                Event(
+                    'pubmsg',
+                    NickMask('user!ident@host'),
+                    '#test',
+                    ['this is an matchme:123 example']
+                )
+        )
+        self.bot.connection.privmsg.assert_called_with(
+                '#test',
+                'Important 123'
+        )
+
+    def test_add_matcher_invalid_priority(self):
+        def handler(bot, source, target, message, match):
+            bot.say(target, 'Matched {}'.format(match.group(1)))
+
+        try:
+            self.bot.add_matcher(
+                    re.compile(r'matchme:([0-9]+)'),
+                    handler,
+                    priority='invalid'
+            )
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('Expected ValueError for priority')
+
+    def test_add_matcher_regex_not_compiled(self):
+        def handler(bot, source, target, message, match):
+            bot.say(target, 'Matched {}'.format(match.group(1)))
+
+        try:
+            self.bot.add_matcher(r'matchme:([0-9]+)', handler)
+        except TypeError:
+            pass
+        else:
+            raise AssertionError('Expected TypeError for regex')
