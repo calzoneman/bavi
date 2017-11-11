@@ -116,7 +116,7 @@ def time(bot, source, target, message, **kwargs):
 
         tz = pytz.timezone(results[0])
 
-    now = datetime.datetime.now().astimezone(tz)
+    now = tz.localize(datetime.datetime.now())
 
     bot.say(
             target,
