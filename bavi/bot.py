@@ -1,6 +1,7 @@
 import irc.bot
 import irc.connection
 import logging
+import sqlite3
 import ssl
 
 from .module_loader import load_modules
@@ -18,7 +19,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         self._command_prefix = '.' # TODO: configurable
         self._commands = {}
 
-    def init_irc(self, irc_config):
+    def init_irc(self):
         irc_config = self.config['irc']
         spec = irc.bot.ServerSpec(
                 irc_config.get('ServerHost'),
@@ -44,6 +45,10 @@ class Bot(irc.bot.SingleServerIRCBot):
                 nick,
                 **additional_args
         )
+
+    def init_db(self):
+        db_config = self.config['sqlite3']
+        self.db = sqlite3.connect(db_config.get('Filename'))
 
     def _addressed_to_me(self, msg):
         name = self.connection.get_nickname()

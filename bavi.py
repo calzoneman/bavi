@@ -21,5 +21,6 @@ if __name__ == '__main__':
 
     bot = Bot(conf)
     bot.init_irc()
+    bot.init_db()
     load_modules(bot)
     bot.start()
