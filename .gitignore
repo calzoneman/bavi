@@ -2,3 +2,4 @@
 .env
 *.conf
 **/__pycache__
+*.db
