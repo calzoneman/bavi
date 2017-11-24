@@ -17,5 +17,5 @@ def load_module(bot, filename):
     try:
         mod = importlib.import_module('.' + path, 'bavi.modules')
         mod.init(bot)
-    except Exception as exception:
-        log.error('Failed to load module %s: %s', path, str(exception))
+    except BaseException as e:
+        log.exception('Failed to load module "%s"', path)
