@@ -29,7 +29,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                 irc_config.get('ServerPassword')
         )
 
-        log.info('Connecting to %s:%d', spec.host, spec.port)
+        
 
         additional_args = {}
 
@@ -47,6 +47,8 @@ class Bot(irc.bot.SingleServerIRCBot):
                 nick,
                 **additional_args
         )
+        
+        log.info('Connecting to %s:%d using nick %s', spec.host, spec.port, nick)
 
     def init_db(self):
         db_config = self.config['sqlite3']
