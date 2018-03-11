@@ -53,6 +53,52 @@ class BotTestCase(unittest.TestCase):
                 'This is a second example'
         )
 
+    def test_command_alias_works(self):
+        def handler(bot, source, target, message, **kwargs):
+            bot.say(target, 'This is an example')
+
+        self.bot.add_command('example', handler, aliases=['a1', 'a2'])
+        self.bot.on_pubmsg(
+                None,
+                Event(
+                    'pubmsg',
+                    NickMask('user!ident@host'),
+                    '#test',
+                    ['.a1']
+                )
+        )
+        self.bot.connection.privmsg.assert_called_with(
+                '#test',
+                'This is an example'
+        )
+
+        self.bot.on_pubmsg(
+                None,
+                Event(
+                    'pubmsg',
+                    NickMask('user!ident@host'),
+                    '#test',
+                    ['.a2']
+                )
+        )
+        self.bot.connection.privmsg.assert_called_with(
+                '#test',
+                'This is an example'
+        )
+
+    def test_command_already_exists_registration_fails(self):
+        def handler(bot, source, target, message, **kwargs):
+            bot.say(target, 'This is an example')
+
+        self.bot.add_command('example', handler)
+
+        try:
+            self.bot.add_command('example', handler)
+        except RuntimeError:
+            return
+        else:
+            raise AssertionError('Expected RuntimeError due to duplicate cmd')
+
     def test_command_not_found_replies_to_user(self):
         self.bot.on_pubmsg(
                 None,

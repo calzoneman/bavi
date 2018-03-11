@@ -29,8 +29,6 @@ class Bot(irc.bot.SingleServerIRCBot):
                 irc_config.get('ServerPassword')
         )
 
-        
-
         additional_args = {}
 
         if irc_config.getboolean('SSL'):
@@ -47,8 +45,13 @@ class Bot(irc.bot.SingleServerIRCBot):
                 nick,
                 **additional_args
         )
-        
-        log.info('Connecting to %s:%d using nick %s', spec.host, spec.port, nick)
+
+        log.info(
+                'Connecting to %s:%d using nick %s',
+                spec.host,
+                spec.port,
+                nick
+        )
 
     def init_db(self):
         db_config = self.config['sqlite3']
@@ -95,11 +98,18 @@ class Bot(irc.bot.SingleServerIRCBot):
         # TODO: log outbound message to chat log
         self.connection.privmsg(target, message)
 
-    def add_command(self, cmd, handler):
+    def add_command(self, cmd, handler, aliases=[]):
         '''
         Register a command
         '''
-        self._commands[cmd] = handler
+        for trigger in [cmd] + aliases:
+            if trigger in self._commands:
+                raise RuntimeError('Command "{}" is already registered'.format(
+                    trigger
+                ))
+
+        for trigger in [cmd] + aliases:
+            self._commands[trigger] = handler
 
     def add_matcher(self, regex, handler, priority='low'):
         if priority not in { 'low', 'medium', 'high' }:
