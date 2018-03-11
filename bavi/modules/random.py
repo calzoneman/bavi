@@ -7,9 +7,7 @@ supported_split = [',', '|', '/', '\\']
 
 
 def init(bot):
-    bot.add_command('choose', choose_command)
-    bot.add_command('pick', choose_command)
-
+    bot.add_command('choose', choose_command, aliases=['pick'])
 
 def choose_command(bot, source, target, message, **kwargs):
     response = ''
