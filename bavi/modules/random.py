@@ -17,7 +17,9 @@ def choose_command(bot, source, target, message, **kwargs):
 
     if len(result_list) > 1:
         response = 'Your choices: {0}, I chose: {1}.'.format(
-            result_list, choice(result_list))
+            ', '.join(result_list),
+            choice(result_list)
+        )
     else:
         response = 'You need to give me more than one thing to choose!'
 

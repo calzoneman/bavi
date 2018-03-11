@@ -46,7 +46,7 @@ class RandomModuleTestCase(unittest.TestCase):
 
             self.bot.reply_to.assert_called_with(
                 NickMask('user!ident@host'), '#test',
-                'Your choices: [\'1\', \'2\', \'3\', \'4\', \'5\'], I chose: 4.'
+                'Your choices: 1, 2, 3, 4, 5, I chose: 4.'
             )
 
     def test_random_pick(self):
@@ -59,8 +59,8 @@ class RandomModuleTestCase(unittest.TestCase):
 
             self.bot.reply_to.assert_called_with(
                 NickMask('user!ident@host'), '#test',
-                'Your choices: [\'a\', \'b\', \'c\', \'d\','
-                ' \'e\', \'f\', \'g\'], I chose: g.')
+                'Your choices: a, b, c, d,'
+                ' e, f, g, I chose: g.')
 
     def test_random_trailing_whitespace(self):
         with mock.patch(
@@ -74,5 +74,5 @@ class RandomModuleTestCase(unittest.TestCase):
 
             self.bot.reply_to.assert_called_with(
                 NickMask('user!ident@host'), '#test',
-                'Your choices: [\'one fish\', \'two fish\','
-                ' \'red fish\', \'blue fish\'], I chose: blue fish.')
+                'Your choices: one fish, two fish,'
+                ' red fish, blue fish, I chose: blue fish.')
